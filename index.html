@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokabu Casino - Premium Gaming Experience</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/babel" src="roulette-game.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'stake-purple': '#8B5CF6',
+                        'stake-pink': '#EC4899',
+                        'stake-blue': '#3B82F6',
+                        'stake-dark': '#0F0F23',
+                        'stake-darker': '#0A0A1A',
+                        'stake-gray': '#1F1F3A',
+                        'stake-light-gray': '#2A2A4A'
+                    },
+                    animation: {
+                        'gradient': 'gradient 3s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'deal': 'deal 0.5s ease-out',
+                        'flip': 'flip 0.6s ease-in-out',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        deal: {
+                            '0%': { transform: 'translateY(-100px) rotate(180deg)', opacity: '0' },
+                            '100%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' }
+                        },
+                        flip: {
+                            '0%': { transform: 'rotateY(0deg)' },
+                            '100%': { transform: 'rotateY(180deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .playing-card {
+            width: 60px;
+            height: 90px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0 2px;
+            animation: deal 0.5s ease-out;
+            transform-style: preserve-3d;
+        }
+        .card-red {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: 2px solid #ff4757;
+        }
+        .card-black {
+            background: linear-gradient(135deg, #2f3542, #1e272e);
+            color: white;
+            border: 2px solid #3742fa;
+        }
+        .card-back {
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            color: white;
+            border: 2px solid #8B5CF6;
+        }
+        .card-hidden {
+            background: linear-gradient(135deg, #2f3542, #1e272e);
+            color: transparent;
+            border: 2px solid #3742fa;
+        }
+        
+        /* Roulette grid layout */
+        .grid-cols-13 {
+            grid-template-columns: repeat(13, minmax(0, 1fr));
+        }
+    </style>
+</head>
+<body class="bg-stake-dark text-white overflow-x-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Roulette Hero Page Component
+        const RouletteHeroPage = ({ onBack }) => {
+            const [isZoomed, setIsZoomed] = useState(false);
+            
+            useEffect(() => {
+                // Trigger zoom effect on mount
+                setTimeout(() => setIsZoomed(true), 100);
+            }, []);
+
+            return (
+                <div className={`fixed inset-0 z-50 transition-all duration-1000 ease-out ${
+                    isZoomed ? 'scale-100 opacity-100' : 'scale-150 opacity-0'
+                }`}>
+                    {/* Background with roulette image */}
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                            backgroundImage: 'url("roulette.jpeg")',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    ></div>
+                    
+                    {/* Overlay with gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-stake-dark/60 via-stake-dark/40 to-stake-dark/80"></div>
+                    
+                    {/* Additional animated background elements */}
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-stake-purple rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float"></div>
+                    <div className="absolute top-40 right-10 w-72 h-72 bg-stake-pink rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '2s'}}></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-stake-blue rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '4s'}}></div>
+
+                    {/* Back button */}
+                    <button 
+                        onClick={() => {
+                            setIsZoomed(false);
+                            setTimeout(() => onBack(), 1000);
+                        }}
+                        className="absolute top-8 left-8 z-20 bg-stake-dark/80 backdrop-blur-md text-white px-6 py-3 rounded-full hover:bg-stake-purple transition-all duration-300 flex items-center space-x-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+                        <div className="text-center max-w-4xl mx-auto mb-12">
+                            <h1 className="text-5xl md:text-7xl font-bold mb-8">
+                                <span style={{
+                                    background: 'linear-gradient(135deg, #FFD700 0%, #3B82F6 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}>Roulette</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+                                Experience the thrill of the wheel with $TOKABU tokens
+                            </p>
+                        </div>
+
+                        {/* Roulette Game Container */}
+                        <div className="w-full max-w-4xl mx-auto">
+                            <RouletteGame />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Blackjack Hero Page Component
+        const BlackjackHeroPage = ({ onBack }) => {
+            const [isZoomed, setIsZoomed] = useState(false);
+            
+            useEffect(() => {
+                // Trigger zoom effect on mount
+                setTimeout(() => setIsZoomed(true), 100);
+            }, []);
+
+            return (
+                <div className={`fixed inset-0 z-50 transition-all duration-1000 ease-out ${
+                    isZoomed ? 'scale-100 opacity-100' : 'scale-150 opacity-0'
+                }`}>
+                    {/* Background with blackjack image */}
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                            backgroundImage: 'url("blackjack.jpeg")',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    ></div>
+                    
+                    {/* Overlay with gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-stake-dark/60 via-stake-dark/40 to-stake-dark/80"></div>
+                    
+                    {/* Additional animated background elements */}
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-stake-purple rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float"></div>
+                    <div className="absolute top-40 right-10 w-72 h-72 bg-stake-pink rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '2s'}}></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-stake-blue rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '4s'}}></div>
+
+                    {/* Back button */}
+                    <button 
+                        onClick={() => {
+                            setIsZoomed(false);
+                            setTimeout(() => onBack(), 1000);
+                        }}
+                        className="absolute top-8 left-8 z-20 bg-stake-dark/80 backdrop-blur-md text-white px-6 py-3 rounded-full hover:bg-stake-purple transition-all duration-300 flex items-center space-x-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+                        <div className="text-center max-w-4xl mx-auto mb-12">
+                            <h1 className="text-5xl md:text-7xl font-bold mb-8">
+                                <span style={{
+                                    background: 'linear-gradient(135deg, #FFD700 0%, #3B82F6 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}>Blackjack</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+                                Beat the dealer to 21 with $TOKABU tokens
+                            </p>
+                        </div>
+
+                        {/* Blackjack Game Container */}
+                        <div className="w-full max-w-4xl mx-auto">
+                            <div className="bg-stake-darker/80 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-stake-purple/20">
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold text-white mb-4">Coming Soon</h2>
+                                    <p className="text-gray-300 mb-6">The ultimate blackjack experience is being prepared for you.</p>
+                                    <div className="flex justify-center space-x-4">
+                                        <div className="w-12 h-16 bg-white rounded-lg shadow-lg flex items-center justify-center text-black font-bold text-sm">A♠</div>
+                                        <div className="w-12 h-16 bg-white rounded-lg shadow-lg flex items-center justify-center text-red-600 font-bold text-sm">K♥</div>
+                                        <div className="w-12 h-16 bg-gradient-to-br from-stake-purple to-stake-pink rounded-lg shadow-lg flex items-center justify-center text-white font-bold text-sm">?</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+
+
+        // Navigation Component
+        const Navigation = () => {
+            const [isScrolled, setIsScrolled] = useState(false);
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setIsScrolled(window.scrollY > 50);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                    isScrolled ? 'bg-stake-darker/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+                }`}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            {/* Logo */}
+                            <div className="flex items-center">
+                                <div className="text-2xl font-bold text-gradient">
+                                    TOKABU
+                                </div>
+                            </div>
+
+                            {/* Desktop Navigation */}
+                            <div className="hidden md:flex items-center space-x-8">
+                                <a href="#home" className="text-gray-300 hover:text-white transition-colors duration-200">Home</a>
+                                <button className="bg-gradient-to-r from-stake-purple to-stake-pink text-white px-6 py-2 rounded-full hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                    Play Now
+                                </button>
+                            </div>
+
+                            {/* Mobile menu button */}
+                            <div className="md:hidden">
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                    className="text-gray-300 hover:text-white"
+                                >
+                                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        {isMobileMenuOpen && (
+                            <div className="md:hidden bg-stake-darker/95 backdrop-blur-md">
+                                <div className="px-2 pt-2 pb-3 space-y-1">
+                                    <a href="#home" className="block px-3 py-2 text-gray-300 hover:text-white transition-colors duration-200">Home</a>
+                                    <button className="w-full mt-4 bg-gradient-to-r from-stake-purple to-stake-pink text-white px-6 py-2 rounded-full hover:shadow-lg transition-all duration-200">
+                                        Play Now
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </nav>
+            );
+        };
+
+        // Hero Section Component
+        const HeroSection = ({ setShowRouletteHero, setShowBlackjackHero }) => {
+            return (
+                <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+                    {/* Background Image */}
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                            backgroundImage: 'url("tokabu.jpeg")',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    ></div>
+                    
+                    {/* Overlay with gradient */}
+                    <div className="absolute inset-0 hero-gradient opacity-40"></div>
+                    
+                    {/* Additional gradient overlay for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-stake-dark/60 via-stake-dark/40 to-stake-dark/80"></div>
+                    
+                    {/* Animated background elements */}
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-stake-purple rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float"></div>
+                    <div className="absolute top-40 right-10 w-72 h-72 bg-stake-pink rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '2s'}}></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-stake-blue rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{animationDelay: '4s'}}></div>
+
+                    {/* Content */}
+                    <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h1 className="text-5xl md:text-7xl font-bold mb-8">
+                            <span style={{
+                                background: 'linear-gradient(135deg, #FFD700 0%, #3B82F6 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text'
+                            }}>Toboku Casino</span>
+                        </h1>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <a 
+                                href="https://x.com/TokabuTheSpirit" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="transition-all duration-300 hover:scale-110"
+                            >
+                                <img 
+                                    src="logo-white.png" 
+                                    alt="Tokabu Logo" 
+                                    className="h-12 w-auto"
+                                />
+                            </a>
+                            <a 
+                                href="https://dexscreener.com/solana/ekv9hdumwqnxzgq5g6ge6bk1zrhkxyc2wnsfl94sqmlj" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="transition-all duration-300 hover:scale-110"
+                            >
+                                <img 
+                                    src="chart.jpeg" 
+                                    alt="Chart" 
+                                    className="h-12 w-auto"
+                                />
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Game Tiles - Bottom Right */}
+                    <div className="absolute bottom-16 right-16 z-20 flex gap-6">
+                        {/* Blackjack Tile */}
+                        <button 
+                            onClick={() => setShowBlackjackHero(true)}
+                            className="block group"
+                        >
+                            <div className="relative">
+                                <img 
+                                    src="blackjack.jpeg" 
+                                    alt="Play Blackjack" 
+                                    className="w-32 h-32 md:w-48 md:h-48 rounded-3xl shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-purple-500/50 object-cover"
+                                    style={{
+                                        filter: 'drop-shadow(0 10px 25px rgba(139, 92, 246, 0.3))',
+                                        border: '2px solid rgba(139, 92, 246, 0.2)'
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-br from-stake-purple/10 to-stake-pink/10 rounded-3xl"></div>
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div className="bg-stake-purple/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                                        Play Blackjack
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Roulette Tile */}
+                        <button 
+                            onClick={() => setShowRouletteHero(true)} 
+                            className="block group"
+                        >
+                            <div className="relative">
+                                <img 
+                                    src="roulette.jpeg" 
+                                    alt="Play Roulette" 
+                                    className="w-32 h-32 md:w-48 md:h-48 rounded-3xl shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-purple-500/50 object-cover"
+                                    style={{
+                                        filter: 'drop-shadow(0 10px 25px rgba(139, 92, 246, 0.3))',
+                                        border: '2px solid rgba(139, 92, 246, 0.2)'
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-br from-stake-purple/10 to-stake-pink/10 rounded-3xl"></div>
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div className="bg-stake-purple/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                                        Play Roulette
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+
+                </section>
+            );
+        };
+
+
+
+        // Main App Component
+        const App = () => {
+            const [showRouletteHero, setShowRouletteHero] = useState(false);
+            const [showBlackjackHero, setShowBlackjackHero] = useState(false);
+
+            return (
+                <div className="min-h-screen bg-stake-dark">
+                    <Navigation />
+                    <HeroSection setShowRouletteHero={setShowRouletteHero} setShowBlackjackHero={setShowBlackjackHero} />
+                    {showRouletteHero && <RouletteHeroPage onBack={() => setShowRouletteHero(false)} />}
+                    {showBlackjackHero && <BlackjackHeroPage onBack={() => setShowBlackjackHero(false)} />}
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
